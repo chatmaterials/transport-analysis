@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
+from analyze_bipolar_risk import analyze as analyze_bipolar
 from analyze_carrier_type import analyze as analyze_carrier
 from analyze_effective_mass import analyze as analyze_mass
 
@@ -23,8 +24,9 @@ def analyze_dos(path: Path) -> dict[str, float]:
     return {"dos_at_fermi": nearest[1]}
 
 
-def analyze(band_path: Path, dos_path: Path, occupied_bands: int, fermi: float, mass_path: Path | None) -> dict[str, object]:
+def analyze(band_path: Path, dos_path: Path, occupied_bands: int, fermi: float, mass_path: Path | None, temperature_k: float = 300.0) -> dict[str, object]:
     carrier = analyze_carrier(band_path, occupied_bands, fermi)
+    bipolar = analyze_bipolar(band_path, occupied_bands, fermi, temperature_k)
     dos = analyze_dos(dos_path)
     mass = analyze_mass(mass_path) if mass_path else None
     if dos["dos_at_fermi"] < 1e-6:
@@ -58,12 +60,15 @@ def analyze(band_path: Path, dos_path: Path, occupied_bands: int, fermi: float, 
         "band_gap_eV": carrier["band_gap_eV"],
         "activation_energy_eV": carrier["activation_energy_eV"],
         "dos_at_fermi": dos["dos_at_fermi"],
+        "temperature_K": temperature_k,
         "regime": regime,
         "effective_mass_me": mass["effective_mass_me"] if mass else None,
         "mobility_hint": mobility_hint,
         "thermoelectric_quality_score": quality_score,
         "screening_class": screening_class,
         "dopability_hint": dopability_hint,
+        "bipolar_risk_score": bipolar["bipolar_risk_score"],
+        "bipolar_risk_class": bipolar["bipolar_risk_class"],
         "observations": ["Transport tendency summarized from band-edge position, DOS at the Fermi level, and optional effective mass."],
     }
 
@@ -75,6 +80,7 @@ def main() -> None:
     parser.add_argument("--mass-path")
     parser.add_argument("--occupied-bands", type=int, default=2)
     parser.add_argument("--fermi", type=float, required=True)
+    parser.add_argument("--temperature-k", type=float, default=300.0)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     payload = analyze(
@@ -83,6 +89,7 @@ def main() -> None:
         args.occupied_bands,
         args.fermi,
         Path(args.mass_path).expanduser().resolve() if args.mass_path else None,
+        args.temperature_k,
     )
     if args.json:
         print(json.dumps(payload, indent=2))

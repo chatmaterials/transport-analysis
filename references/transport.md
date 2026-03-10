@@ -5,3 +5,4 @@
 - DOS-informed transport trend summaries are qualitative, not a replacement for full transport coefficient calculations.
 - Screening scores are useful for ranking, but they are not a substitute for full transport coefficients.
 - Activation-energy and quality-score style descriptors are useful for screening, but they remain compact proxies rather than predictive transport models.
+- Bipolar-risk estimates are useful for narrow-gap screening, but they remain simplified intrinsic-excitation proxies rather than full finite-temperature transport solutions.

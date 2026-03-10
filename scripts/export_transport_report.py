@@ -13,6 +13,8 @@ from analyze_transport_trend import analyze as analyze_trend
 def screening_note(carrier: dict[str, object], mass: dict[str, object] | None, trend: dict[str, object]) -> str:
     if trend["regime"] == "metallic-like":
         return "The sampled DOS indicates a metallic-like regime, so this case is better treated as a metal or degenerate system than as a simple semiconductor."
+    if trend["bipolar_risk_class"] == "high-bipolar-risk":
+        return "The band gap is small enough that bipolar conduction may become a serious screening concern at the chosen temperature."
     if trend["screening_class"] == "promising-semiconductor-like":
         return f"This case looks promising in compact screening: `{carrier['carrier_tendency']}` tendency, `{trend['dopability_hint']}`, and a reasonable transport quality score."
     mass_value = mass["effective_mass_me"] if mass and mass["effective_mass_me"] is not None else None
@@ -38,6 +40,8 @@ def render_markdown(carrier: dict[str, object], mass: dict[str, object] | None, 
         f"- Screening class: `{trend['screening_class']}`",
         f"- Transport quality score: `{trend['thermoelectric_quality_score']:.4f}`",
         f"- Dopability hint: `{trend['dopability_hint']}`",
+        f"- Bipolar risk class: `{trend['bipolar_risk_class']}`",
+        f"- Bipolar risk score: `{trend['bipolar_risk_score']:.4e}`",
     ]
     if mass is not None:
         lines.extend(
@@ -60,13 +64,21 @@ def main() -> None:
     parser.add_argument("--mass-path")
     parser.add_argument("--occupied-bands", type=int, default=2)
     parser.add_argument("--fermi", type=float, required=True)
+    parser.add_argument("--temperature-k", type=float, default=300.0)
     parser.add_argument("--output")
     args = parser.parse_args()
     band_path = Path(args.band_path).expanduser().resolve()
     dos_path = Path(args.dos_path).expanduser().resolve()
     carrier = analyze_carrier(band_path, args.occupied_bands, args.fermi)
     mass = analyze_mass(Path(args.mass_path).expanduser().resolve()) if args.mass_path else None
-    trend = analyze_trend(band_path, dos_path, args.occupied_bands, args.fermi, Path(args.mass_path).expanduser().resolve() if args.mass_path else None)
+    trend = analyze_trend(
+        band_path,
+        dos_path,
+        args.occupied_bands,
+        args.fermi,
+        Path(args.mass_path).expanduser().resolve() if args.mass_path else None,
+        args.temperature_k,
+    )
     output = Path(args.output).expanduser().resolve() if args.output else Path.cwd() / "TRANSPORT_REPORT.md"
     output.write_text(render_markdown(carrier, mass, trend))
     print(output)
