@@ -25,6 +25,7 @@ def analyze(path: Path, occupied_bands: int, fermi: float) -> dict[str, object]:
     cbm = min((energies[occupied_bands], k) for k, energies in rows)
     dv = abs(fermi - vbm[0])
     dc = abs(cbm[0] - fermi)
+    activation = min(dv, dc)
     if abs(dv - dc) < 1e-12:
         carrier = "ambiguous"
     elif dc < dv:
@@ -37,6 +38,9 @@ def analyze(path: Path, occupied_bands: int, fermi: float) -> dict[str, object]:
         "vbm_eV": vbm[0],
         "cbm_eV": cbm[0],
         "band_gap_eV": cbm[0] - vbm[0],
+        "distance_to_vbm_eV": dv,
+        "distance_to_cbm_eV": dc,
+        "activation_energy_eV": activation,
         "carrier_tendency": carrier,
         "observations": ["Carrier-type tendency estimated from the relative position of the Fermi level and band edges."],
     }

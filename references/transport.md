@@ -4,3 +4,4 @@
 - Effective mass extracted from a simple parabola is a local approximation near the chosen band edge.
 - DOS-informed transport trend summaries are qualitative, not a replacement for full transport coefficient calculations.
 - Screening scores are useful for ranking, but they are not a substitute for full transport coefficients.
+- Activation-energy and quality-score style descriptors are useful for screening, but they remain compact proxies rather than predictive transport models.

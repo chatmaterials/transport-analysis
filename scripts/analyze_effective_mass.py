@@ -56,10 +56,24 @@ def analyze(path: Path) -> dict[str, object]:
     )
     curvature = 2.0 * a
     effective_mass = HBAR2_OVER_ME / curvature if abs(curvature) > 1e-14 else None
+    mass_magnitude = abs(effective_mass) if effective_mass is not None else None
+    if mass_magnitude is None:
+        mobility_class = None
+    elif mass_magnitude < 0.5:
+        mobility_class = "very-light"
+    elif mass_magnitude < 1.5:
+        mobility_class = "light"
+    elif mass_magnitude < 5.0:
+        mobility_class = "moderate"
+    else:
+        mobility_class = "heavy"
     return {
         "path": str(path),
         "curvature_eV_A2": curvature,
         "effective_mass_me": effective_mass,
+        "mass_magnitude_me": mass_magnitude,
+        "band_edge_type": "conduction-like" if curvature > 0 else "valence-like",
+        "mobility_class": mobility_class,
         "band_edge_energy_eV": c,
         "observations": ["Effective mass estimated from a quadratic fit around the sampled band edge."],
     }

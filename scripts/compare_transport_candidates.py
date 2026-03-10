@@ -53,7 +53,8 @@ def analyze_case(
     carrier_penalty = 0.25 if prefer_carrier and carrier["carrier_tendency"] != prefer_carrier else 0.0
     mass_value = abs(float(mass["effective_mass_me"])) if mass and mass["effective_mass_me"] is not None else None
     mass_penalty = 0.25 * mass_value if mass_value is not None else 0.5
-    score = gap_penalty + regime_penalty + carrier_penalty + mass_penalty
+    quality_penalty = max(0.0, 0.3 - float(trend["thermoelectric_quality_score"]))
+    score = gap_penalty + regime_penalty + carrier_penalty + mass_penalty + quality_penalty
 
     return {
         "case": root.name,
@@ -63,10 +64,14 @@ def analyze_case(
         "regime": trend["regime"],
         "dos_at_fermi": trend["dos_at_fermi"],
         "effective_mass_me": mass["effective_mass_me"] if mass else None,
+        "activation_energy_eV": trend["activation_energy_eV"],
+        "thermoelectric_quality_score": trend["thermoelectric_quality_score"],
+        "screening_class": trend["screening_class"],
         "gap_penalty_eV": gap_penalty,
         "regime_penalty": regime_penalty,
         "carrier_penalty": carrier_penalty,
         "mass_penalty": mass_penalty,
+        "quality_penalty": quality_penalty,
         "screening_score": score,
     }
 
@@ -87,7 +92,7 @@ def analyze_cases(
     return {
         "target_gap_window_eV": [target_gap_min, target_gap_max],
         "preferred_carrier": prefer_carrier,
-        "ranking_basis": "screening_score = gap_penalty + regime_penalty + carrier_penalty + mass_penalty",
+        "ranking_basis": "screening_score = gap_penalty + regime_penalty + carrier_penalty + mass_penalty + quality_penalty",
         "cases": ranked,
         "best_case": ranked[0]["case"] if ranked else None,
         "observations": [

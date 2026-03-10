@@ -13,6 +13,8 @@ from analyze_transport_trend import analyze as analyze_trend
 def screening_note(carrier: dict[str, object], mass: dict[str, object] | None, trend: dict[str, object]) -> str:
     if trend["regime"] == "metallic-like":
         return "The sampled DOS indicates a metallic-like regime, so this case is better treated as a metal or degenerate system than as a simple semiconductor."
+    if trend["screening_class"] == "promising-semiconductor-like":
+        return f"This case looks promising in compact screening: `{carrier['carrier_tendency']}` tendency, `{trend['dopability_hint']}`, and a reasonable transport quality score."
     mass_value = mass["effective_mass_me"] if mass and mass["effective_mass_me"] is not None else None
     if mass_value is not None and abs(float(mass_value)) < 1.0:
         return f"This case combines a `{carrier['carrier_tendency']}` tendency with a relatively light effective mass, which is favorable for simple screening."
@@ -28,10 +30,14 @@ def render_markdown(carrier: dict[str, object], mass: dict[str, object] | None, 
         "## Carrier Type",
         f"- Carrier tendency: `{carrier['carrier_tendency']}`",
         f"- Band gap (eV): `{carrier['band_gap_eV']:.4f}`",
+        f"- Activation energy (eV): `{carrier['activation_energy_eV']:.4f}`",
         "",
         "## Transport Trend",
         f"- Regime: `{trend['regime']}`",
         f"- DOS at Fermi: `{trend['dos_at_fermi']:.4f}`",
+        f"- Screening class: `{trend['screening_class']}`",
+        f"- Transport quality score: `{trend['thermoelectric_quality_score']:.4f}`",
+        f"- Dopability hint: `{trend['dopability_hint']}`",
     ]
     if mass is not None:
         lines.extend(
@@ -39,6 +45,7 @@ def render_markdown(carrier: dict[str, object], mass: dict[str, object] | None, 
                 "",
                 "## Effective Mass",
                 f"- Effective mass (m_e): `{mass['effective_mass_me']:.4f}`",
+                f"- Mobility class: `{mass['mobility_class']}`",
                 f"- Curvature (eV A^-2): `{mass['curvature_eV_A2']:.4f}`",
             ]
         )

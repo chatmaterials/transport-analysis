@@ -1,6 +1,6 @@
 ---
 name: "transport-analysis"
-description: "Use when the task is to analyze transport-relevant quantities from DFT-derived results, including carrier-type tendency, effective-mass estimates, simple DOS-informed transport trends, multi-candidate ranking, and compact markdown reports from finished calculations."
+description: "Use when the task is to analyze transport-relevant quantities from DFT-derived results, including carrier-type tendency, effective-mass estimates, simple DOS-informed transport trends, thermoelectric-style screening descriptors, multi-candidate ranking, and compact markdown reports from finished calculations."
 ---
 
 # Transport Analysis
@@ -12,6 +12,7 @@ Use this skill for transport-oriented post-processing rather than generic workfl
 - estimate whether the electronic structure suggests electron- or hole-like transport tendency
 - estimate an effective mass from a simple band-edge dispersion
 - summarize a transport trend from band-edge and DOS information
+- derive compact thermoelectric-style screening descriptors such as activation energy and transport quality score
 - rank multiple candidate datasets with a compact screening heuristic
 - write a compact transport-analysis report from existing data
 
@@ -22,7 +23,7 @@ Use this skill for transport-oriented post-processing rather than generic workfl
 - `scripts/analyze_effective_mass.py`
   Estimate an effective mass from a simple band-edge dispersion.
 - `scripts/analyze_transport_trend.py`
-  Summarize a simple transport trend from band-edge and DOS information.
+  Summarize a simple transport trend from band-edge and DOS information and derive compact quality descriptors.
 - `scripts/compare_transport_candidates.py`
   Rank multiple candidate datasets with a compact gap-plus-mass screening heuristic.
 - `scripts/export_transport_report.py`

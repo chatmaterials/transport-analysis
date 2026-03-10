@@ -34,13 +34,36 @@ def analyze(band_path: Path, dos_path: Path, occupied_bands: int, fermi: float, 
     mobility_hint = None
     if mass and mass["effective_mass_me"] is not None:
         mobility_hint = "lighter carriers" if abs(mass["effective_mass_me"]) < 1.0 else "heavier carriers"
+    mass_value = abs(mass["effective_mass_me"]) if mass and mass["effective_mass_me"] is not None else None
+    quality_score = 0.0
+    if regime == "semiconducting":
+        quality_score = float(carrier["band_gap_eV"]) / ((mass_value if mass_value is not None else 2.0) * (1.0 + dos["dos_at_fermi"]))
+    if regime == "metallic-like":
+        screening_class = "degenerate-metal-like"
+    elif quality_score >= 0.3:
+        screening_class = "promising-semiconductor-like"
+    elif quality_score >= 0.1:
+        screening_class = "moderate-semiconductor-like"
+    else:
+        screening_class = "limited-semiconductor-like"
+    activation = float(carrier["activation_energy_eV"])
+    if activation <= 0.15:
+        dopability_hint = "easy-to-activate"
+    elif activation <= 0.35:
+        dopability_hint = "moderately-activated"
+    else:
+        dopability_hint = "deep-fermi-level"
     return {
         "carrier_tendency": carrier["carrier_tendency"],
         "band_gap_eV": carrier["band_gap_eV"],
+        "activation_energy_eV": carrier["activation_energy_eV"],
         "dos_at_fermi": dos["dos_at_fermi"],
         "regime": regime,
         "effective_mass_me": mass["effective_mass_me"] if mass else None,
         "mobility_hint": mobility_hint,
+        "thermoelectric_quality_score": quality_score,
+        "screening_class": screening_class,
+        "dopability_hint": dopability_hint,
         "observations": ["Transport tendency summarized from band-edge position, DOS at the Fermi level, and optional effective mass."],
     }
 

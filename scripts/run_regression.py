@@ -29,14 +29,18 @@ def ensure(condition: bool, message: str) -> None:
 def main() -> None:
     carrier = run_json("scripts/analyze_carrier_type.py", "fixtures/band/bands.dat", "--occupied-bands", "2", "--fermi", "0.35", "--json")
     ensure(carrier["carrier_tendency"] == "electron-like", "transport-analysis should identify an electron-like tendency")
+    ensure(abs(carrier["activation_energy_eV"] - 0.25) < 1e-6, "transport-analysis should compute the activation energy to the nearest band edge")
     mass = run_json("scripts/analyze_effective_mass.py", "fixtures/effective_mass/effective_mass.dat", "--json")
     ensure(abs(mass["effective_mass_me"] - 1.90499105775) < 1e-3, "transport-analysis should estimate the effective mass")
+    ensure(mass["mobility_class"] == "moderate", "transport-analysis should classify the effective mass scale")
     trend = run_json("scripts/analyze_transport_trend.py", "--band-path", "fixtures/band/bands.dat", "--dos-path", "fixtures/dos/dos.dat", "--mass-path", "fixtures/effective_mass/effective_mass.dat", "--occupied-bands", "2", "--fermi", "0.35", "--json")
     ensure(trend["regime"] == "semiconducting", "transport-analysis should identify a semiconducting regime")
+    ensure(trend["screening_class"] == "promising-semiconductor-like", "transport-analysis should classify the reference trend as promising")
     ranked = run_json(
         "scripts/compare_transport_candidates.py",
         "fixtures",
         "fixtures/candidates/heavy",
+        "fixtures/candidates/metallic",
         "--occupied-bands",
         "2",
         "--fermi",
