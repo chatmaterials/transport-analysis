@@ -33,6 +33,23 @@ def main() -> None:
     ensure(abs(mass["effective_mass_me"] - 1.90499105775) < 1e-3, "transport-analysis should estimate the effective mass")
     trend = run_json("scripts/analyze_transport_trend.py", "--band-path", "fixtures/band/bands.dat", "--dos-path", "fixtures/dos/dos.dat", "--mass-path", "fixtures/effective_mass/effective_mass.dat", "--occupied-bands", "2", "--fermi", "0.35", "--json")
     ensure(trend["regime"] == "semiconducting", "transport-analysis should identify a semiconducting regime")
+    ranked = run_json(
+        "scripts/compare_transport_candidates.py",
+        "fixtures",
+        "fixtures/candidates/heavy",
+        "--occupied-bands",
+        "2",
+        "--fermi",
+        "0.35",
+        "--target-gap-min",
+        "0.5",
+        "--target-gap-max",
+        "1.0",
+        "--prefer-carrier",
+        "electron-like",
+        "--json",
+    )
+    ensure(ranked["best_case"] == "fixtures", "transport-analysis should rank the lighter-mass fixture ahead of the heavy candidate")
     temp_dir = Path(tempfile.mkdtemp(prefix="transport-analysis-report-"))
     try:
         report_path = Path(
@@ -55,6 +72,7 @@ def main() -> None:
         report_text = report_path.read_text()
         ensure("# Transport Analysis Report" in report_text, "transport report should have a heading")
         ensure("## Carrier Type" in report_text and "## Effective Mass" in report_text, "transport report should include carrier and mass sections")
+        ensure("## Screening Note" in report_text, "transport report should include a screening note")
     finally:
         shutil.rmtree(temp_dir)
     print("transport-analysis regression passed")

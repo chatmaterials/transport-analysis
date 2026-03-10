@@ -10,6 +10,17 @@ from analyze_effective_mass import analyze as analyze_mass
 from analyze_transport_trend import analyze as analyze_trend
 
 
+def screening_note(carrier: dict[str, object], mass: dict[str, object] | None, trend: dict[str, object]) -> str:
+    if trend["regime"] == "metallic-like":
+        return "The sampled DOS indicates a metallic-like regime, so this case is better treated as a metal or degenerate system than as a simple semiconductor."
+    mass_value = mass["effective_mass_me"] if mass and mass["effective_mass_me"] is not None else None
+    if mass_value is not None and abs(float(mass_value)) < 1.0:
+        return f"This case combines a `{carrier['carrier_tendency']}` tendency with a relatively light effective mass, which is favorable for simple screening."
+    if mass_value is not None:
+        return f"This case remains semiconducting, but the sampled `{carrier['carrier_tendency']}` band edge is comparatively heavy."
+    return "This case is semiconducting in the sampled data, but the screening picture is incomplete without an effective-mass estimate."
+
+
 def render_markdown(carrier: dict[str, object], mass: dict[str, object] | None, trend: dict[str, object]) -> str:
     lines = [
         "# Transport Analysis Report",
@@ -31,6 +42,7 @@ def render_markdown(carrier: dict[str, object], mass: dict[str, object] | None, 
                 f"- Curvature (eV A^-2): `{mass['curvature_eV_A2']:.4f}`",
             ]
         )
+    lines.extend(["", "## Screening Note", f"- {screening_note(carrier, mass, trend)}"])
     return "\n".join(lines).rstrip() + "\n"
 
 
